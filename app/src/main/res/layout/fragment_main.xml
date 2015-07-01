@@ -41,7 +41,11 @@
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_send"
                 android:contentDescription="@string/action_send"/>
-
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="connect_to"
+            android:id="@+id/connect_to"/>
     </LinearLayout>
 
 </LinearLayout>

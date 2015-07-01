@@ -10,8 +10,10 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -19,6 +21,8 @@ import android.widget.Toast;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,6 +79,10 @@ public class MainFragment extends Fragment {
         mSocket.on("user left", onUserLeft);
         mSocket.on("typing", onTyping);
         mSocket.on("stop typing", onStopTyping);
+        mSocket.on("game", onGame);
+        mSocket.on("teams", onTeams);
+        mSocket.on("actions", onActions);
+        mSocket.on("5582ce6a0a069f7205609a80", onAction);
         mSocket.connect();
 
         startSignIn();
@@ -148,6 +156,14 @@ public class MainFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 attemptSend();
+            }
+        });
+
+        Button connectButton = (Button) view.findViewById(R.id.connect_to);
+        connectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSocket.emit("connect_to", "5582ce6a0a069f7205609a80" );//id del game hardcoded
             }
         });
     }
@@ -376,6 +392,77 @@ public class MainFragment extends Fragment {
                         return;
                     }
                     removeTyping(username);
+                }
+            });
+        }
+    };
+
+
+    private Emitter.Listener onGame = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    Log.d("game", data.toString());
+                    try {
+                        addMessage("nice", data.getString("name"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onAction = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                   // JSONObject data = (JSONObject) args[0];
+                    Log.d("game", (String)args[0]);
+                    try {
+                        addMessage("nice", (String)args[0]);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onTeams = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONArray data = (JSONArray) args[0];
+                    Log.d("teams", data.toString());
+                    try {
+                        addMessage("nice", data.getJSONObject(0).getString("name"));
+                        addMessage("nice", data.getJSONObject(1).getString("name") );
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onActions = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONArray data = (JSONArray) args[0];
+                    Log.d("actions", data.toString());
+
                 }
             });
         }
